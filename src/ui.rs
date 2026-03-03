@@ -1,4 +1,5 @@
 use ratatui::{widgets::*, prelude::*};
+use rand::Rng;
 
 #[derive(PartialEq)]
 pub enum CurrentScreen {
@@ -21,20 +22,30 @@ impl App {
             current_screen: CurrentScreen::MainMenu,
         }
     }
+
+    pub fn generate_grid() -> Vec<Vec<u8>> {
+        let mut rng = rand::make_rng();
+        let mut grid = [[0u8; 10]; 10];
+        for row in 0..10 {
+            for col in 0..10 {
+                let emoji = rng.gen_range(0..6);
+            }
+        }
+    }
     
 }
 
 pub fn draw(f: &mut Frame, app: &mut App) {
     match app.current_screen {
-        CurrentScreen::MainMenu => draw_main_menu(f, app),
+        CurrentScreen::MainMenu => draw_main_menu(f),
         CurrentScreen::Game => draw_game(f, app),
         CurrentScreen::GameOver => draw_game_over(f, app),
     }
 }
 
-pub fn draw_main_menu(f: &mut Frame, app: &mut App) {
-    let title = Paragraph::new("Bedonked").block(Block::default().borders(Borders::ALL).title("Bedonked"));
-    f.render_widget(title, f.size());
+pub fn draw_main_menu(f: &mut Frame) {
+    let title = Paragraph::new("Bedonked").style(Style::default().add_modifier(Modifier::BOLD)).block(Block::default().borders(Borders::ALL).title("Bedonked"));
+    f.render_widget(title, f.area());
 }
 
 pub fn draw_game(f: &mut Frame, app: &mut App) {
