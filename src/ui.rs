@@ -1,5 +1,5 @@
-use ratatui::{widgets::*, prelude::*};
-use rand::Rng;
+use ratatui::{prelude::*, symbols::line, widgets::*};
+use rand::{prelude::*, random_range};
 
 #[derive(PartialEq)]
 pub enum CurrentScreen {
@@ -12,6 +12,7 @@ pub struct App {
     pub score: u32,
     pub high_score: u32,
     pub current_screen: CurrentScreen,
+    pub grid: Vec<Vec<u8>>
 }
 
 impl App {
@@ -20,19 +21,33 @@ impl App {
             score: 0,
             high_score: 0,
             current_screen: CurrentScreen::MainMenu,
+            grid: generate_grid()
         }
     }
+}
 
-    pub fn generate_grid() -> Vec<Vec<u8>> {
-        let mut rng = rand::make_rng();
-        let mut grid = [[0u8; 10]; 10];
-        for row in 0..10 {
-            for col in 0..10 {
-                let emoji = rng.gen_range(0..6);
-            }
+pub fn generate_grid() -> Vec<Vec<u8>> {
+    let mut rng = rand::rng();
+    let mut grid = vec![vec![0u8]; 10];
+    for row in 0..10 {
+        for col in 0..10 {
+            grid[row][col] = rng.random_range(0..5);
+                
         }
     }
-    
+    return grid;
+}
+
+fn get_emoji(id: u8) -> &'static str {
+    match id {
+        0 => "🫏",
+        1 => "🐮",
+        2 => "🍩",
+        3 => "🐖",
+        4 => "🐄",
+        5 => "🐐",
+        _ => ""
+    }
 }
 
 pub fn draw(f: &mut Frame, app: &mut App) {
@@ -49,10 +64,21 @@ pub fn draw_main_menu(f: &mut Frame) {
 }
 
 pub fn draw_game(f: &mut Frame, app: &mut App) {
-    let rows = Layout::default().direction(Direction::Vertical).constraints([Constraint::Min(0), Constraint::Max(3)].as_ref()).split(f.size());
-    let main_block = Block::default().borders(Borders::ALL).title("Bedonked");
+    let rows = Layout::default().direction(Direction::Vertical).constraints([Constraint::Length(12), Constraint::Min(0)].as_ref()).split(f.area());
+    let mut lines = Vec::new();
+    for row in &app.grid{
+        let mut cols = Vec::new();
+        for &cell in row{
+            cols.push(Span::raw(format!("{} ", get_emoji(cell))));
+        }
+        lines.push(cols);
+        
+    } 
+    let line_block = Paragraph::new(lines).block(Block::default().title("bedonked").borders(Borders::ALL)).alignment(Alignment::Center);
+    
+    //let main_block = Block::default().borders(Borders::ALL).title("Bedonked");
     let score_block = Paragraph::new(format!("Score: {}", app.score)).block(Block::default().borders(Borders::ALL).title("Score"));
-    f.render_widget(main_block, rows[0]);
+    f.render_widget(line_block, rows[0]);
     f.render_widget(score_block, rows[1]);
 }
 
